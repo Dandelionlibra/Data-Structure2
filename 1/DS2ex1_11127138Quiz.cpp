@@ -3,20 +3,20 @@
 #include <fstream>  // open, is_open
 #include <iomanip>  // setw, setprecision
 #include <iostream> // cout, endl, fixed
-#include <string>   // string
+#include <string>   // stringu
 #include <vector>   // vector
 #include <math.h>
 using namespace std;
 
 struct schoolType {
     int no; // initial no
-    //string sname; // school name
-    //string dname; // department name
-    //string type;  // day or night
-    //string level; // graduate or undergraduate
+    string sname; // school name
+    string dname; // department name
+    string type;  // day or night
+    string level; // graduate or undergraduate
     int nstud;    // num of students
-    //int nprof;    // num of professors
-    //int ngrad;    // num of graduates
+    int nprof;    // num of professors
+    int ngrad;    // num of graduates
 };
 
 class Heap{
@@ -76,7 +76,6 @@ public:
                 item[child] = temp;
                 heapRebuild(child);
             }
-
         }
     }
 
@@ -95,16 +94,13 @@ public:
             tmp = tmp - pow(2, height);
             height++;
         }
-
        cout << "HP heap height = " << height << "\n";
-
     }
     
     void showroot(){
         int idx = 0 ;
         cout << "root: ";
         cout << "[" << item.at(idx).no << "] " << item.at(idx).nstud << "\n" ;
-
     }
 
     void showleftmost(){
@@ -115,19 +111,14 @@ public:
                 idx = idx + pow(increment, i) ;
             else
                 break;
-            
         }
-
         cout << "leftmost bottom: " ;
         cout << "[" << item.at(idx).no << "] " << item.at(idx).nstud << "\n" ;
-
-
     }
     void showbottom(){
         int idx = item.size()-1;
         cout << "bottom: ";
         cout << "[" << item.at(idx).no << "] " << item.at(idx).nstud << "\n" ;
-
     }
     void clearUp() { // cut off the entire tree
         clearHeap();
@@ -268,20 +259,38 @@ class Deap{
         }
     }
 
+    int seletionMax(int correspond, int childR, int childL){
+        int max = correspond;
+        if(childR < item.size()){
+            if(item.at(childR).nstud > item.at(childL).nstud && item.at(childR).nstud > item.at(correspond).nstud)
+                max = childR;
+            if(item.at(childL).nstud >= item.at(childR).nstud && item.at(childL).nstud >= item.at(correspond).nstud)
+                max = childL;
+        }
+        else if(childL < item.size()){
+            if(item.at(childL).nstud > item.at(correspond).nstud)
+                max = childL;
+        }
+        return max;
+    }
+
     void DelCheckmax( int index ){
         int child = (index+1)*2 ;
-
         if(child-1 >= item.size()){ // dont have child
             int correspond, p_correspond;
             minormax(index, correspond, p_correspond);
             if(correspond < item.size()){ // have correspond
-                if(item.at(index).nstud < item.at(correspond).nstud){
+                int childR = (correspond+1)*2;
+                int childL = childR-1;
+                int max = seletionMax(correspond, childR, childL);
+                if(item.at(index).nstud < item.at(max).nstud){
                     schoolType tmp = item.at(index);
-                    item.at(index) = item.at(correspond);
-                    item.at(correspond) = tmp;
-                    Checkmin(correspond);
+                    item.at(index) = item.at(max);
+                    item.at(max) = tmp;
+                    Checkmin(max);
                 }
                 return;
+
             }
             else{ // dont have correspond; This will not happen with maximum heap
                 if(p_correspond == 0)
@@ -303,7 +312,7 @@ class Deap{
             schoolType tmp = item.at(index) ;
             item.at(index) = item.at(child);
             item.at(child) = tmp;
-            DelCheckmax( child );
+            DelCheckmax(child);
         }
     }
     
@@ -337,8 +346,9 @@ public:
     }
 
     void del(int index){
-        cout << "The Remove data is: " ;
-        cout << "[" << item.at(index).no << "] " << item.at(index).nstud << "\n" ;
+        //cout << "The Remove data is: " ;
+        int n = item.at(index).no ;
+        cout << "[" << n << "] " << item.at(index).sname << item.at(index).dname << ", " << item.at(index).type << ", " << item.at(index).level << ", " << item.at(index).nstud << "\n" ;
             
         if(item.size()==2){
             item.clear();
@@ -362,6 +372,7 @@ public:
         else
             DelCheckmax(index);
         
+        return;
     }
 
     void showdeap(){
@@ -371,7 +382,7 @@ public:
         }
         for( int i = 1, j = pow(2,i), c = 1 ; c < item.size() ; i++, j = pow(2,i) ){
             for( int z = j ; c < item.size()  && z > 0 ; z--, c++ )
-                cout << item.at(c).nstud << " " ;
+                cout << item.at(c).sname << item.at(c).nstud << " " ;
             cout << "\n" ;
         }
     }
@@ -411,176 +422,6 @@ public:
 
 };
 
-class MHeap{
-    vector<schoolType> item;
-    schoolType rootItem;
-    //int size; // number of heap items
-
-    bool minormax(int index, int &correspond, int &p_correspond){
-        int layer = 1; // layer=0 only have a null node
-        int tmp=0;
-        int pretmp=0;
-        bool min = true;
-
-        while(tmp<index){ // pretmp < index <= tmp
-            pretmp = tmp;
-            tmp = tmp + pow(2, layer);
-            ++layer;
-        }
-        if (index > tmp-(tmp-pretmp)/2)
-            min = false;
-
-        // setting correspond & p_correspond 
-        if(min)
-            correspond = index + (tmp-pretmp)/2;
-        else
-            correspond = index - (tmp-pretmp)/2;
-        p_correspond = (correspond-1)/2 ;
-
-        //cout << index << ":  min:" << min << "  correspond:" << correspond << "  p_correspond:" << p_correspond << "\n";
-        
-        return min;
-    }
-
-    void Checkmin( int index ){
-        if(index == 1) // avoid 0/0
-            return;
-        int father = (index-1)/2 ;
-        if(father == 0) // avoid goto root which have no data
-            return;
-        //cout << "\033[31;1mmin father:" << father << " \033[0m \n";
-        
-        if(item[index].nstud < item[father].nstud){
-            schoolType t = item[index] ;
-            item[index] = item[father];
-            item[father] = t;
-
-            Checkmin( father );
-        }
-    }
-
-    void Checkmax( int index ){
-        int father = (index-1)/2 ;
-        if(father == 0) // avoid goto root which have no data
-            return;
-        cout << "\033[32;1mmax father:" << father << " \033[0m \n";
-
-        if(item[index].nstud > item[father].nstud){
-            schoolType t = item[index] ;
-            item[index] = item[father];
-            item[father] = t;
-
-            Checkmax( father );
-        }
-    }
-
-    void rearrangeDEAP(int index) {
-        int correspond=0;
-        int p_correspond=0; // father of correspond
-        bool min = minormax(index, correspond, p_correspond); // min = false means max
-
-        showdeap();
-        if(min){ // min, must dont have correspond
-            cout << "\033[33;47m min...\033[0m\n";
-
-            if(p_correspond != 0 && item[index].nstud > item[p_correspond].nstud){
-                schoolType t = item[index] ;
-                item[index] = item[p_correspond];
-                item[p_correspond] = t;
-                Checkmax(p_correspond);
-            }
-            else{
-                Checkmin(index);
-            }
-            
-        }
-        else{ // max, must have correspond
-            // cout << "\033[32;47m max...\033[0m\n";
-
-            if(item[index].nstud < item[correspond].nstud){
-                schoolType t = item[index] ;
-                item[index] = item[correspond];
-                item[correspond] = t;
-                Checkmin(correspond);
-            }
-            else{
-                Checkmax(index);
-            }
-        }
-        // cout << "\033[31;47m Press Enter to continue...\033[0m\n";
-        // cin.get();
-        // showdeap();
-    
-    }
-    void clearDeap(){
-        //size = 0;
-        item.clear();
-    }
-public:
-    MHeap(){} // constructor of an empty tree
-
-    bool deapIsEmpty(){
-        return (item.size()==0);
-    }
-
-    void deapInsertAll( vector<schoolType> pSet ){
-        item = pSet;
-        //size = item.size();
-    }
-
-    void deapInsert( schoolType pSet ){ // Insert new
-        if(deapIsEmpty()){
-            schoolType p;
-            p.no=0;
-            p.nstud=0;
-            item.push_back(p);
-        }
-
-        item.push_back(pSet); // put new item at the end of heap
-        rearrangeDEAP(item.size()-1);
-    }
-
-    void showdeap(){
-        for( int i = 0, j = pow(2,i), c = 0 ; c < item.size() ; i++, j = pow(2,i) ){
-            for( int z = j ; c < item.size()  && z > 0 ; z--, c++ )
-                cout << item.at(c).nstud << " " ;
-            cout << "\n" ;
-        }
-    }
-
-    void showheight(){
-        int tmp = item.size() ;
-        int height = 0;
-        while( tmp > 0 ){
-            tmp = tmp - pow(2, height);
-            height++;
-        }
-
-       cout << "HP heap height = " << height << "\n";
-    }
-    void showleftmost(){
-        int increment = 2 ;
-        int idx = 0 ;
-        for( int i = 0 ; i < item.size() ; i++ ){
-            if( idx + pow(increment,i) < item.size() ) idx = idx + pow(increment, i) ;
-            else break;
-        }
-        cout << "leftmost bottom: " ;
-        cout << "[" << item.at(idx).no << "] " << item.at(idx).nstud << "\n" ;
-    }
-    void showbottom(){
-        int idx = item.size()-1;
-        cout << "bottom: ";
-        cout << "[" << item.at(idx).no << "] " << item.at(idx).nstud << "\n" ;
-
-    }
-    void clearUp() { // cut off the entire tree
-        clearDeap();
-    } // end clearUp
-
-    ~MHeap() { clearUp(); }
-};
-
 
 class SchoolList{
     vector<schoolType> pSet; // set of data records
@@ -591,12 +432,9 @@ class SchoolList{
 
     Heap aHeap;
     Deap aDeap;
-    //MHeap mHeap;
     
     void show(int i, vector<schoolType> p){ // display one record on screen 
         cout << right << "[" << setw(2) <<i+1<< "]\t" << left << p.at(i).no << "\t" << p[i].nstud << endl;
-        /*cout << right << "[" << setw(2) <<i+1<< "]\t" << left << p.at(i).no << "\t" << p.at(i).sname << "\t" << setw(24) << p[i].dname << "\t" 
-             << setw(16) << p[i].type << p[i].level << "\t" << p[i].nstud << "\t" << p[i].nprof << "\n" ;*/
     }
 
     public:
@@ -650,7 +488,7 @@ class SchoolList{
                 pos = buf.find_first_of('\t', pre);
                 cut = buf.substr(pre, pos - pre);
                 switch (++fNo) {
-                    /*case 2:
+                    case 2:
                         oneR.sname = cut; // get the school name
                         break;
                     case 4:
@@ -661,19 +499,19 @@ class SchoolList{
                         break;
                     case 6:
                         oneR.level = cut; // get graduate or undergraduate
-                        break;*/
+                        break;
                     case 7:
                         cut = sortinput(cut);
                         oneR.nstud = atoi(cut.c_str()); // get the number of students
                         break;
-                    /*case 8:
+                    case 8:
                         cut = sortinput(cut);
                         oneR.nprof = atoi(cut.c_str()); // get the number of professors
                         break;
                     case 9:
                         cut = sortinput(cut);
                         oneR.ngrad = atoi(cut.c_str()); // get the number of graduates
-                        break;*/
+                        break;
                     default:
                         break;
                 }                              // end switch
@@ -711,8 +549,6 @@ class SchoolList{
             aHeap.heapInsert(pSet[i]);
             aHeap.sortInsert();
         }
-
-        //aHeap.showheap();
         aHeap.showroot();
         aHeap.showbottom();
         aHeap.showleftmost();
@@ -725,15 +561,32 @@ class SchoolList{
         deapexist = true;
         for(int i = 0 ; i < pSet.size() ; i++)
             aDeap.deapInsert(pSet[i]);
-            //aDeap.sortInsert();
-        
-
-        aDeap.showdeap();
-        //aDeap.showroot();
+            
         aDeap.showbottom();
         aDeap.showleftmost();
 
     }
+    void getMaxK(){
+        int k = 0;
+        int s = aDeap.deap_size()-1;
+        if( s<=0 ) return;
+
+        cout << "\nEnter the value of K in [1," << s << "]: ";
+        cin >> k;
+        if( k<1 || k>s ) return;
+
+        for(int i=1 ; i<=k ; i++){
+            if(aDeap.deapIsEmpty()){
+                cout << "The Dataset is empty" << endl;
+                return;
+            }
+            
+
+            cout << "Top "  << setw(3) << i << ": ";
+            delBDeap(2);
+        }
+    }
+
     void delSDeap(int index){ // delete smallest
         if(aDeap.deapIsEmpty()){
             cout << "The Dataset is empty" << endl;
@@ -749,24 +602,12 @@ class SchoolList{
 
     void delBDeap(int index){ // delete biggest
         int s = aDeap.deap_size();
-        if(aDeap.deapIsEmpty()){
-            cout << "The Dataset is empty" << endl;
-            return;
-        }
-        else if(s<=index)
+        if(s<=index)
             aDeap.del(s-1);
         else
             aDeap.del(index);
-
-        aDeap.showdeap();
-        aDeap.showbottom();
-        aDeap.showleftmost();
+        //aDeap.showdeap();
     }
-
-    void printHeight() { // print the tree height
-
-        //aBST.showH(0);
-    } // end printHeight
 
     void clearUp(){
         fileexist = false;
@@ -774,8 +615,6 @@ class SchoolList{
         deapexist = false;
         fileID.clear();
         pSet.clear();
-        //Leftmost.clear();
-        //Rightmost.clear();
         aHeap.clearUp();
         aDeap.clearUp();
 
@@ -791,15 +630,13 @@ int main() {
     bool isEnd = false;
     string fileName, input;
     while (!isEnd) {
-        cout << "\n**** Heap Construction *****";
-        cout << "\n* 0. QUIT                  *";
-        cout << "\n* 1. Build a max heap      *";
-        cout << "\n* 2. Build a DEAP          *";
-        cout << "\n* 3. Build a minMax heap   *";
-        cout << "\n* 4. delete the smallest DEAP*";
-        cout << "\n* 5. delete the biggest DEAP*";
-        cout << "\n****************************";
-        cout << "\nInput a choice(0, 1, 2, 3, 4, 5): ";
+        cout << "\n**** Heap Construction ********";
+        cout << "\n* 0. QUIT                     *";
+        cout << "\n* 1. Build a max heap         *";
+        cout << "\n* 2. Build a DEAP             *";
+        cout << "\n* 3. Top-K maximums from DEAP *";
+        cout << "\n*******************************";
+        cout << "\nInput a choice(0, 1, 2, 3): ";
         cin >> command;
         switch (command) {
             case 0:
@@ -813,38 +650,17 @@ int main() {
                 break;
             case 2:
                 if (slist.readFile()){
-                    //slist.showAll();
                     cout << "<DEAP>\n";
                     slist.buildDeap();
                 }
                 break;
             case 3:
-                if (slist.readFile()){
-                    //slist.showAll();
-                    cout << "<minmax heap>\n";
-                    //slist.bulidMheap();
-                }
+                if (slist.DeapExist())
+                    slist.getMaxK();
+                /*else
+                    cout << "\nPlease choose command 2 first!\n";*/
                 break;
-            case 4:
-                if (slist.DeapExist()){
-                    //slist.showAll();
-                    //cout << "<DEAP>\n";
-                    //slist.buildDeap();
-                    cout << "<delete the smallest DEAP>\n";
-                    slist.delSDeap(1);
-                }
-                else
-                    cout << "###Please read the data first###\n";
-
-                break;
-            case 5:
-                if (slist.DeapExist()){
-                    cout << "<delete the biggest DEAP>\n";
-                    slist.delBDeap(2);
-                }
-                else
-                    cout << "###Please read the data first###\n";
-                break;
+            
             default:
                 cout << "\nCommand does not exist!\n";
         } // end switch case
