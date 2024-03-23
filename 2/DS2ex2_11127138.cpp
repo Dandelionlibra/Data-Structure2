@@ -74,11 +74,6 @@ public:
     }
 
     void SortInOrder(Node *r){
-        // cout << "\033[1;32m SortInOrder. \033[0m" << endl; // green
-        // for(int i = 0 ; i < r->keys.size() ; i++)
-        //     cout << r->keys.at(i) <<" ";
-        // cout << endl;
-
         if( r->keys.size() == 2 && r->keys.at(0) > r->keys.at(1) ){
             int tmpkey = r->keys.at(0);
             r->keys.at(0) = r->keys.at(1);
@@ -115,7 +110,7 @@ public:
         }
     }
 
-    Node* Insert(schoolType pSet, Node *&r){
+    Node* Insert(schoolType pSet, Node *r){
         if(r == nullptr){
             Node *newnode = new Node();
             newnode->keys.push_back(pSet.ngrad);
@@ -164,7 +159,7 @@ public:
     }
 
     void outerInsert(schoolType pSet){
-        root = Insert( pSet, root );
+        root = Insert(pSet, root);
         
         if(newinsert->keys.size()==3)// sort
             split();
@@ -256,10 +251,6 @@ public:
         
     }
     
-    /*void show(int no){
-        cout << "no:" << no << endl;
-    }*/
-
     void showAll(Node *r){
         if(r!=nullptr){
             for(int i = 0 ; i < r->keys.size() ; i++){
@@ -662,7 +653,6 @@ int main() {
         cout << "\n* 0. QUIT                     *";
         cout << "\n* 1. Build 23 tree            *";
         cout << "\n* 2. Build AVL tree           *";
-        //cout << "\n* 3. Top-K maximums from DEAP *";
         cout << "\n*******************************";
         cout << "\nInput a choice(0, 1, 2): ";
         //cout << "\nInput a choice(0, 1, 2, 3): ";
@@ -684,12 +674,6 @@ int main() {
                 else
                     cout << "### Choose 1 first. ###" << endl;
                 break;
-            /*case 3:
-                if (slist.DeapExist())
-                    slist.getMaxK();
-                /*else
-                    cout << "\nPlease choose command 2 first!\n";
-                break;*/
             
             default:
                 cout << "\nCommand does not exist!\n";
