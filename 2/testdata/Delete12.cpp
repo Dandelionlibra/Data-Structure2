@@ -314,7 +314,7 @@ class Two_Three_Tree{
         newinsert->no.erase(newinsert->no.begin()+1, newinsert->no.end());
 
     }
-    Node *checkcase(Node *&r, int index, int key){
+    void checkcase(Node *&r, int index, int key){
         Node *tmp = r->parent;
         delno = r->no.at(index); // store delete no
         if(r->isLeaf){
@@ -331,14 +331,14 @@ class Two_Three_Tree{
                 for(int i = 0 ; i < r->keys.size() ; i++)
                     cout << r->keys.at(i) << " ";
                 cout << "\n\033[1;32m1.End Erase\033[0m" << endl; // green
-                return r;
+                return;
             }
             else{ // r->keys.size() == 1
                 if(tmp == nullptr){ // only remain root and keys==1, directly delete root
                     // delete r;
                     // r = nullptr;
                     pop(r);
-                    return nullptr;
+                    return;
                 }
                 if(tmp->keys.size() == 1){
                     // setting the childnode which need to insert tmp
@@ -352,48 +352,28 @@ class Two_Three_Tree{
                     else if(tmp == tmp->parent->children.at(1))  parentchild = 1;
                     else    parentchild = 2;
 
-                    // connect tmp's parent and tmpchild
                     //cout << "\033[0;32;42mtmp.parent.childssize:  \033[0m" << tmp->parent->children.at(parentchild)->keys.at(0) << endl; // green
-                    
-                    Node *p = tmp->parent;
+                    // rotate
                     newinsert = tmp->children.at(tmpchild);
-                    p->children.at(parentchild) = newinsert;
-                    newinsert->parent = p;
+                    r->keys.at(0) = tmp->keys.at(0);
+                    r->no.at(0) = tmp->no.at(0);
+                    tmp->keys.at(0) = newinsert->keys.at(0);
+                    tmp->no.at(0) = newinsert->no.at(0);
 
-                    for(int i = 0 ; i < tmp->children.size() ; i++) // disconnect
-                        tmp->children.at(i) = nullptr;
-                    tmp->parent = nullptr;
-                    r->parent = nullptr;  // delete node r
-                    pop(r);
+                    vector<int> k;
+                    k.push_back(newinsert->keys.at(1));
+                    newinsert->keys = k;
 
-                    // insert key, than split, in order to implement rotate
-                    //if(root == r)   root = nullptr;
+                    vector<vector<int>> n;
+                    n.push_back(newinsert->no.at(1));
+                    newinsert->no = n;
                     
-                    newinsert->keys.push_back(tmp->keys.at(0));
-                    //cout << "\033[0;32;42m newinsert->keys.at(0):  \033[0m" << newinsert->keys.at(0) << endl; // green
-                    newinsert->no.push_back(tmp->no.at(0));
-                    SortInOrder(newinsert);
-                    //root = Insert(tmp->keys.at(0), tmp->no.at(0), root);
-
-                    cout << "\033[0;32;42m1.Start showAll!!! \033[0m" << endl; // green
-                    showAll(root);
-                    cout << "\033[0;32;42m1.End showAll!!! \033[0m" << endl; // green
-
-                    if(newinsert->keys.size()==3)
-                        Delsplit();
 
                     cout << "\033[0;32;42m2.Start showAll!!! \033[0m" << endl; // green
                     showAll(root);
                     cout << "\033[0;32;42m2.End showAll!!! \033[0m" << endl; // green
 
-                    // erase data in tmp
-                    tmp->keys.clear();
-                    tmp->no.clear();
-                    tmp->parent = nullptr;
-                    // tmp->children.at(0) = nullptr;
-                    // tmp->children.at(1) = nullptr;
-                    tmp->children.clear();
-                    return newinsert;
+                    return;
                 }
                 else{ //if(tmp->keys.size() == 2){
                     
@@ -420,7 +400,7 @@ class Two_Three_Tree{
             cout << "\033[1;35m Find delete position. \033[0m" << endl; // purple
             int index = distance(r->keys.begin(), it);
             
-            return checkcase(r, index, key);
+            checkcase(r, index, key);
 
             cout << "\033[1;35m End delete data. \033[0m" << endl; // purple
 
