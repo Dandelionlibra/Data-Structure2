@@ -19,10 +19,6 @@ struct schoolType {
     int nprof;    // num of professors
     int ngrad;    // num of graduates
 };
-enum color{
-    RED,
-    BLACK
-};
 
 struct AVLNode {
     int key;
@@ -35,7 +31,7 @@ struct AVLNode {
 struct Node { // 2-3 tree
     vector<int> keys; // store nstud value
     vector<vector<int>> no; // the no have same key
-    vector<Node*> children; //
+    vector<Node*> children;
     struct Node *parent;
     bool isLeaf; // leaf or not
 
@@ -159,7 +155,7 @@ public:
     }
 
     void outerInsert(schoolType pSet){
-        root = Insert(pSet, root);
+        root = Insert( pSet, root );
         
         if(newinsert->keys.size()==3)// sort
             split();
@@ -250,7 +246,7 @@ public:
         }
         
     }
-    
+
     void showAll(Node *r){
         if(r!=nullptr){
             for(int i = 0 ; i < r->keys.size() ; i++){
@@ -266,26 +262,25 @@ public:
 
     }
 
-    int showNode(Node *r){
-        int nodenum = 0;
+    void Nodenum(Node *r){
         if(r==nullptr)
-            return 0;
+            return;
         size++;
-        for(int i = 0 ; i < r->children.size() ; i++)
-            showNode(r->children.at(i));
-        return size;
+        for(int i = 0 ; i < r->keys.size()+1 ; i++)
+            Nodenum(r->children.at(i));
+        
     }
-
     void showheight(){
         Node *t = root;
         int height = 0;
+        size = 0;
+        Nodenum(root);
         while( t!=nullptr && t->children.size()>0 ){
             t = t->children.at(0);
             height++;
         }
-       cout << "Tree height = " << height << "\n";
-       cout << "Number of nodes = " << showNode(root) << "\n";
-       
+        cout << "Tree height = " << height << "\n";
+        cout << "Number of nodes = " << size << "\n";
     }
     vector<vector<int>> showroot(){
         return root->no;
@@ -337,10 +332,9 @@ class AVL_Tree{
             else                              // if value bigger than key
                 node->rchild = insertNode(node->rchild, value);
         }
-
         node->height = 1 + max(height(node->lchild), height(node->rchild)); // update_height
+        
         return confirm_balance(node, value.nstud);
-
     } // end insertNode
 
     AVLNode* confirm_balance(AVLNode *r, int value){
@@ -369,38 +363,38 @@ class AVL_Tree{
         return r;
     }
     
-    int max(int a, int b) { // Function to get maximum of two integers
+    int max(int a, int b) { //  get max
         return (a > b) ? a : b;
     }
     
-    AVLNode* rightRotate(AVLNode *r){ // Function to right rotate subtree rooted with y
-        AVLNode *tmp1 = r->lchild;
-        AVLNode *tmp2 = tmp1->rchild;
+    AVLNode* rightRotate(AVLNode *x){ // right rotate subtree rooted with x
+        AVLNode *y = x->lchild;
+        AVLNode *z = y->rchild;
 
         //rotation
-        tmp1->rchild = r;
-        r->lchild = tmp2;
+        y->rchild = x;
+        x->lchild = z;
 
         //Update height
-        r->height = max(height(r->lchild), height(r->rchild)) + 1;
-        tmp1->height = max(height(tmp1->lchild), height(tmp1->rchild)) + 1;
+        x->height = max(height(x->lchild), height(x->rchild)) + 1;
+        y->height = max(height(y->lchild), height(y->rchild)) + 1;
 
-        return tmp1;
+        return y;
     }
 
-    AVLNode* leftRotate(AVLNode *r){ // Function to left rotate subtree rooted with x
-        AVLNode *tmp1 = r->rchild;
-        AVLNode *tmp2 = tmp1->lchild;
+    AVLNode* leftRotate(AVLNode *x){ // left rotate subtree rooted with x
+        AVLNode *y = x->rchild;
+        AVLNode *z = y->lchild;
 
         //rotation
-        tmp1->lchild = r;
-        r->rchild = tmp2;
+        y->lchild = x;
+        x->rchild = z;
 
         //Update height
-        r->height = max(height(r->lchild), height(r->rchild)) + 1;
-        tmp1->height = max(height(tmp1->lchild), height(tmp1->rchild)) + 1;
+        x->height = max(height(x->lchild), height(x->rchild)) + 1;
+        y->height = max(height(y->lchild), height(y->rchild)) + 1;
 
-        return tmp1;
+        return y;
     }
 
     void clearAVL(AVLNode *&del) { // clear up the entire tree by recursion
@@ -442,8 +436,6 @@ public:
 
     ~AVL_Tree() { clearUp(); } // destructor
 }; // end AVL_Tree
-
-
 
 
 class SchoolList{
@@ -551,7 +543,6 @@ class SchoolList{
         inFile.close();
 
         if (!pSet.size()) {
-            //cout << "\n### Get nothing from the file " << fileName << "!###\n";
             fileexist = false;
             return false;
         } // end if
@@ -653,6 +644,7 @@ int main() {
         cout << "\n* 0. QUIT                     *";
         cout << "\n* 1. Build 23 tree            *";
         cout << "\n* 2. Build AVL tree           *";
+        //cout << "\n* 3. Top-K maximums from DEAP *";
         cout << "\n*******************************";
         cout << "\nInput a choice(0, 1, 2): ";
         //cout << "\nInput a choice(0, 1, 2, 3): ";
@@ -674,6 +666,12 @@ int main() {
                 else
                     cout << "### Choose 1 first. ###" << endl;
                 break;
+            /*case 3:
+                if (slist.DeapExist())
+                    slist.getMaxK();
+                /*else
+                    cout << "\nPlease choose command 2 first!\n";
+                break;*/
             
             default:
                 cout << "\nCommand does not exist!\n";
