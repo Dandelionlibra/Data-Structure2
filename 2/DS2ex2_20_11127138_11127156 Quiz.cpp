@@ -1,4 +1,5 @@
 // 11127138 林雨臻
+// 11127156 王佩諭
 #include <cstdlib>  // atoi, system
 #include <fstream>  // open, is_open
 #include <iomanip>  // setw, setprecision
@@ -90,7 +91,7 @@ public:
             if((index_s==0 && index_b==1)||(index_s==1 && index_b==0))  index_m = 2;
             else if((index_s==2 && index_b==1)||(index_s==1 && index_b==2))  index_m = 0;
             else if((index_s==0 && index_b==2)||(index_s==2 && index_b==0))  index_m = 1;
-            
+
             if( index_s != 0 || index_m != 1 || index_b != 2 ){
                 r->keys.push_back(r->keys.at(index_s));
                 r->keys.push_back(r->keys.at(index_m));
@@ -101,7 +102,7 @@ public:
                 r->no.push_back(r->no.at(index_m));
                 r->no.push_back(r->no.at(index_b));
                 r->no.erase(r->no.begin(), r->no.begin()+3);
-            
+
             }
         }
     }
@@ -122,6 +123,7 @@ public:
             if (it != r->keys.end()){ // have the same key
                 int index = distance(r->keys.begin(), it);
                 r->no.at(index).push_back(pSet.no);
+                // size--;
             }
             else{
                 if(r->isLeaf){ // is leaf, add new data
@@ -155,12 +157,13 @@ public:
     }
 
     void outerInsert(schoolType pSet){
+        size++;
         root = Insert( pSet, root );
-        
+
         if(newinsert->keys.size()==3)// sort
             split();
     }
-    
+
     void splitchild(Node* &parent, Node* &right){
         // parent node
         parent->keys.push_back(newinsert->keys.at(1)); // the middle value
@@ -172,12 +175,12 @@ public:
         right->parent = parent; // setting parent node
         right->keys.push_back(newinsert->keys.at(2)); // the biggest value
         right->no.push_back(newinsert->no.at(2));
-        
+
         // Ｌeft node
         newinsert->parent = parent;
         newinsert->keys.erase(newinsert->keys.begin()+1, newinsert->keys.end());
         newinsert->no.erase(newinsert->no.begin()+1, newinsert->no.end());
-        
+
         if(!newinsert->isLeaf){ // if newinsert is innernode, update right and leftnode'child
             right->isLeaf = false;
             right->children.at(0) = newinsert->children.at(2);
@@ -193,13 +196,13 @@ public:
     void split(){
         if(newinsert->keys.size() < 3)
             return;
-        
+
         if(newinsert->parent==nullptr){ // root
             Node* parent = new Node();
             root = parent; // update new root
             Node* right = new Node();
             splitchild(parent, right);
-            
+
             // connect child and parent
             parent->children.at(0) = newinsert;
             parent->children.at(1) = right;
@@ -244,7 +247,7 @@ public:
             newinsert = newinsert->parent;
             split();
         }
-        
+
     }
 
     void showAll(Node *r){
@@ -261,6 +264,65 @@ public:
         }
 
     }
+    /*************************************************************************************/
+    void find_max(Node* r, int k, vector<int>& result) {
+        if(r == nullptr)
+            return;
+
+        // for (int i = r->children.size()-1; i >= 0; i--) {
+        if(r->keys.size() == 1){
+            find_max(r->children.at(1), k, result);
+            for(int j = 0 ; j < r->no.at(0).size() ; j++){
+                if(k == result.size())
+                    return;
+                result.push_back(r->no.at(0).at(j));
+            }
+            find_max(r->children.at(0), k, result);
+        }
+        else if(r->keys.size() == 2){
+            find_max(r->children.at(2), k, result);
+            for(int j = 0 ; j < r->no.at(1).size() ; j++){
+                if(k == result.size())
+                    return;
+                result.push_back(r->no.at(1).at(j));
+            }
+            find_max(r->children.at(1), k, result);
+            for(int j = 0 ; j < r->no.at(0).size() ; j++){
+                if(k == result.size())
+                    return;
+                result.push_back(r->no.at(0).at(j));
+            }
+            find_max(r->children.at(0), k, result);
+        }
+
+        for (int i = r->keys.size()-1 ; i >= 0 ; i--) {
+            for(int j = 0 ; j < r->no.at(i).size() ; j++){
+                if(k == result.size())
+                    return;
+                vector<int>::iterator it = find(result.begin(), result.end(), r->no.at(i).at(j));
+                if (it == r->keys.end()){ // dont have the same key
+                    //cout << "\n\033[1;32mpush_back: " << r->no.at(i).at(j) << ": " << r->keys.at(i) <<" \033[0m" << endl; // green
+                    result.push_back(r->no.at(i).at(j));
+                }
+
+            }
+        }
+
+    }
+
+    int get_size(){
+        return size;
+    }
+
+    vector<int> find_max_outer(int k){
+        vector<int> result;
+        find_max(root, k, result);
+        // find_max(root, k, result);
+        return result;
+    }
+
+
+    /*************************************************************************************/
 
     void Nodenum(Node *r){
         if(r==nullptr)
@@ -268,7 +330,7 @@ public:
         size++;
         for(int i = 0 ; i < r->keys.size()+1 ; i++)
             Nodenum(r->children.at(i));
-        
+
     }
     void showheight(){
         Node *t = root;
@@ -291,6 +353,7 @@ public:
 class AVL_Tree{
     AVLNode *root; // point to the root of data
     int size;
+    vector<int> delno;
 
     int getH(AVLNode *r) const { // calculate the tree by recursion
         if (r == nullptr)
@@ -310,8 +373,10 @@ class AVL_Tree{
             return 0;
         return N->height;
     }
-
-    AVLNode* insertNode(AVLNode *node, schoolType value){ // insert a node by recursion
+    int max(int a, int b) { //  get max
+        return (a > b) ? a : b;
+    }
+    AVLNode* insertNode(AVLNode *node, schoolType value){ // insert a data by recursion
         if(node == nullptr){
             size++;
             node = new AVLNode();
@@ -333,40 +398,12 @@ class AVL_Tree{
                 node->rchild = insertNode(node->rchild, value);
         }
         node->height = 1 + max(height(node->lchild), height(node->rchild)); // update_height
-        
-        return confirm_balance(node, value.nstud);
+
+        // return confirm_balance(node, value.nstud);
+        return checkBalance(node);
+
     } // end insertNode
 
-    AVLNode* confirm_balance(AVLNode *r, int value){
-        int balance;
-        if (r == nullptr)
-            balance = 0;
-        else
-            balance = height(r->lchild) - height(r->rchild);
-
-        //LL
-        if (balance > 1 && value < r->lchild->key)
-            return rightRotate(r);
-        //RR
-        if (balance < -1 && value > r->rchild->key)
-            return leftRotate(r);
-        //LR
-        if (balance > 1 && value > r->lchild->key) {
-            r->lchild = leftRotate(r->lchild);
-            return rightRotate(r);
-        }
-        //RL
-        if (balance < -1 && value < r->rchild->key) {
-            r->rchild = rightRotate(r->rchild);
-            return leftRotate(r);
-        }
-        return r;
-    }
-    
-    int max(int a, int b) { //  get max
-        return (a > b) ? a : b;
-    }
-    
     AVLNode* rightRotate(AVLNode *x){ // right rotate subtree rooted with x
         AVLNode *y = x->lchild;
         AVLNode *z = y->rchild;
@@ -397,6 +434,63 @@ class AVL_Tree{
         return y;
     }
 
+    AVLNode* deleteMaxNode(AVLNode *r){
+        if(r == nullptr)
+            return r;
+        if(r->rchild == nullptr){ // find the max node
+            for(int i = 0 ; i < r->no.size() ; i++) // add the no to delno
+                delno.push_back(r->no.at(i));
+
+            if(r->lchild == nullptr){ // don't have left child
+                r->no.clear();
+                delete r;
+                r = nullptr;
+                size--;
+                return r;
+            }
+            else{ // have left child
+                AVLNode *tmp = r->lchild;
+                r->no.clear();
+                r->lchild = nullptr;
+                delete r;
+                r = nullptr;
+                size--;
+                return tmp;
+            }
+
+        }
+        r->rchild = deleteMaxNode(r->rchild);
+        r->height = 1 + max(height(r->lchild), height(r->rchild));
+        // r->height = r->height - 1;
+
+        return checkBalance(r);
+    }
+
+    AVLNode* checkBalance(AVLNode *r){
+        int balance;
+        if (r == nullptr)
+            balance = 0;
+        else
+            balance = height(r->lchild) - height(r->rchild);
+
+        if (balance > 1 && height(r->lchild->lchild) >= height(r->lchild->rchild)) //LL
+            return rightRotate(r);
+
+        else if (balance < -1 && height(r->rchild->rchild) >= height(r->rchild->lchild)) //RR
+            return leftRotate(r);
+
+        else if (balance > 1 && height(r->lchild->lchild) < height(r->lchild->rchild)){ //LR
+            r->lchild = leftRotate(r->lchild);
+            return rightRotate(r);
+        }
+        else if (balance < -1 && height(r->rchild->rchild) < height(r->rchild->lchild)){ //RL
+            r->rchild = rightRotate(r->rchild);
+            return leftRotate(r);
+        }
+        return r;
+    }
+
+
     void clearAVL(AVLNode *&del) { // clear up the entire tree by recursion
         if(del == nullptr){
             delete del;
@@ -420,6 +514,37 @@ public:
         root = insertNode(root, value);
     } //  end add
 
+    void Del(){
+        root = deleteMaxNode(root);
+        // cout << "\033[1;31minordertravel. \033[0m" << endl; // red
+        // travel();
+    }
+
+    int get_size(){
+        return size;
+    }
+
+    vector<int> find_max_outer(int k){
+        vector<int> result;
+        find_max(root, k, result);
+        return result;
+    }
+
+    void find_max(AVLNode *r, int k, vector<int>& result){
+        if(r == nullptr)
+            return;
+
+        find_max(r->rchild, k, result);
+        for(int i = 0 ; i < r->no.size() ; i++){
+            if(k == result.size())
+                return;
+            // cout << "\n\033[1;32mpush_back: " << r->no.at(i) <<" \033[0m" << endl; // green
+            result.push_back(r->no.at(i));
+        }
+
+        find_max(r->lchild, k, result);
+    }
+
     void showheight(){
        cout << "Tree height = " << getH(root) << "\n";
        cout << "Number of nodes = " << size << "\n";
@@ -428,8 +553,31 @@ public:
         return root->no;
     }
 
+    vector<int> showdel(){
+        return delno;
+    }
+
+    void clear_delno(){
+        delno.clear();
+    }
+
+    void inordertravel(AVLNode *r){
+        if(r!=nullptr){
+            inordertravel(r->lchild);
+            cout << r->key << " ";
+            inordertravel(r->rchild);
+        }
+        // cout <<" null " ;
+    }
+
+    void travel(){
+        inordertravel(root);
+        cout << "\n";
+    }
+
     void clearUp() { // cut off the entire tree
         clearAVL(root);
+        delno.clear();
         size = 0;
         root = nullptr; // have to initail!!!!
     } // end clearUp
@@ -447,8 +595,8 @@ class SchoolList{
 
     Two_Three_Tree Two_Three;
     AVL_Tree AVL;
-    
-    void show(int i, vector<schoolType> p){ // display one record on screen 
+
+    void show(int i, vector<schoolType> p){ // display one record on screen
         cout << right << "[" << setw(2) <<i+1<< "]\t" << left << p.at(i).no << "\t" << p[i].ngrad<< endl;
     }
 
@@ -596,7 +744,7 @@ class SchoolList{
         }
         else{
             AVL_Tree_exist = true;
-            for (int i = 0; i < pSet.size(); i++) 
+            for (int i = 0; i < pSet.size(); i++)
                 AVL.add(pSet.at(i));
         }
 
@@ -618,7 +766,65 @@ class SchoolList{
             cout<<endl;
         }
 
+        // AVL.travel();
+
     }
+    void get23MaxK(){
+        int k = 0;
+        int s = pSet.size();
+        if( s <= 0 ) return;
+
+        cout << "\nEnter K in [1," << s << "]: ";
+        cin >> k;
+        if( k<1 || k>s ) return;
+
+        cout << "K: " << k << endl;
+        vector<int> no = Two_Three.find_max_outer(k);
+
+        int index = 1;
+        for(int i = 0 ; i < no.size() ; i++){
+            for(int j = 0 ; j < pSet.size() ; j++){
+                if(no.at(i) == pSet.at(j).no){
+                    cout << index << ": ";
+                    cout << "[" << no.at(i) << "] " << pSet.at(j).sname << ", "
+                        << pSet.at(j).dname << ", " << pSet.at(j).type << ", " << pSet.at(j).level
+                        << ", " << pSet.at(j).nstud << ", " << pSet.at(j).ngrad<< "\n" ;
+                    index++;
+                    break;
+                }
+            }
+        }
+    }
+    void getAVLMaxK(){
+        int k = 0;
+        int s = pSet.size();
+        if( s <= 0 ) return;
+
+        cout << "\nEnter K in [1," << s << "]: ";
+        cin >> k;
+        if( k<1 || k>s ) return;
+
+        cout << "K: " << k << endl;
+        vector<int> no = AVL.find_max_outer(k);
+
+        int index = 1;
+        for(int i = 0 ; i < no.size() ; i++){
+            for(int j = 0 ; j < pSet.size() ; j++){
+                if(no.at(i) == pSet.at(j).no){
+                    cout << index << ": ";
+                    cout << "[" << no.at(i) << "] " << pSet.at(j).sname << ", "
+                        << pSet.at(j).dname << ", " << pSet.at(j).type << ", " << pSet.at(j).level
+                        << ", " << pSet.at(j).nstud << ", " << pSet.at(j).ngrad<< "\n" ;
+                    index++;
+                    break;
+                }
+            }
+        }
+
+    }
+
+
+
     void clearUp(){
         fileexist = false;
         TwoThree_Tree_exist = false;
@@ -644,11 +850,27 @@ int main() {
         cout << "\n* 0. QUIT                     *";
         cout << "\n* 1. Build 23 tree            *";
         cout << "\n* 2. Build AVL tree           *";
-        //cout << "\n* 3. Top-K maximums from DEAP *";
+        cout << "\n* 3. Top-K search on 23 tree  *";
+        cout << "\n* 4. Top-K search on AVL tree *";
+
+
         cout << "\n*******************************";
-        cout << "\nInput a choice(0, 1, 2): ";
-        //cout << "\nInput a choice(0, 1, 2, 3): ";
-        cin >> command;
+        cout << "\nInput a choice(0, 1, 2, 3, 4): ";
+        // cout << "\nInput a choice(0, 1, 2, 3): ";
+        cin >> input;
+        if(input == "0")
+            command = 0;
+        else if(input == "1")
+            command = 1;
+        else if(input == "2")
+            command = 2;
+        else if(input == "3")
+            command = 3;
+        else if(input == "4")
+            command = 4;
+        else
+            command = -1;
+
         switch (command) {
             case 0:
                 isEnd = true;
@@ -666,13 +888,23 @@ int main() {
                 else
                     cout << "### Choose 1 first. ###" << endl;
                 break;
-            /*case 3:
-                if (slist.DeapExist())
-                    slist.getMaxK();
-                /*else
-                    cout << "\nPlease choose command 2 first!\n";
-                break;*/
-            
+            case 3:
+                if (slist.Tree23Exist())
+                    slist.get23MaxK();
+                else
+                    cout << "\nPlease choose command 1 first!\n";
+                break;
+            case 4:
+                if (slist.fileExist()){
+                    if (slist.AVLExist())
+                        slist.getAVLMaxK();
+                    else
+                        cout << "### Choose 2 first. ###\n";
+                }
+                else
+                    cout << "### Choose 1 first. ###\n";
+                break;
+
             default:
                 cout << "\nCommand does not exist!\n";
         } // end switch case
