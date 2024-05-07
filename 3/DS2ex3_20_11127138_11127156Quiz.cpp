@@ -218,7 +218,7 @@ public:
 
         if(success){ // success find 10527209
             cout << "\n" << "{ "<< student_quadratic.at(index).sid << ", " <<  student_quadratic.at(index).sname << ", "
-                 << resetiosflags(ios::fixed) << setprecision(2) << student_quadratic.at(index).mean <<" }" << " is found after "<< probing_times <<" probes.\n";
+                 << resetiosflags(ios::fixed) << setprecision(4) << student_quadratic.at(index).mean <<" }" << " is found after "<< probing_times <<" probes.\n";
         } //
         else
             cout << "\n" << id << " is not found after "<< probing_times <<" probes.\n";
@@ -384,7 +384,7 @@ public:
 
         if(success){ // success find
             cout << "\n" << "{ "<< student_double.at(index).sid << ", " <<  student_double.at(index).sname << ", "
-                 << resetiosflags(ios::fixed) << setprecision(2) << student_double.at(index).mean <<" }" << " is found after "<< probing_times <<" probes.\n";
+                 << resetiosflags(ios::fixed) << setprecision(4) << student_double.at(index).mean <<" }" << " is found after "<< probing_times <<" probes.\n";
         }
         else
             cout << "\n" << id << " is not found after "<< probing_times <<" probes.\n";
